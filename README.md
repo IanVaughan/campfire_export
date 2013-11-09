@@ -8,7 +8,7 @@
 ## Intro ##
 
 I had an old, defunct [Campfire](http://campfirenow.com/) account with five
-years' worth of transcripts in it, some of them hilarious, others just 
+years' worth of transcripts in it, some of them hilarious, others just
 memorable. Unfortunately, Campfire doesn't currently have an export function;
 instead it provides pages of individual transcripts. I wanted a script to
 export everything from all five years, using the Campfire API.
@@ -109,3 +109,12 @@ Gist I forked had contributions from:
 Thanks, all!
 
 - Marc Hedlund, marc@precipice.org
+
+
+# campfire_export -- export Campfire transcripts and uploaded files.
+#
+# Since Campfire (www.campfirenow.com) doesn't provide an export feature,
+# this script implements one via the Campfire API.
+#
+# See https://github.com/precipice/campfire_export/blob/master/README.md
+# for more information on using this script.

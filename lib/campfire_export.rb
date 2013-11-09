@@ -1,10 +1,5 @@
 #!/usr/bin/env ruby
 
-# campfire_export.rb -- export Campfire transcripts and uploaded files.
-#
-# Since Campfire (www.campfirenow.com) doesn't provide an export feature,
-# this script implements one via the Campfire API.
-
 require 'rubygems'
 
 require 'campfire_export/timezone'

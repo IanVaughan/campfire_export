@@ -1,13 +1,5 @@
 #!/usr/bin/env ruby
 
-# campfire_export -- export Campfire transcripts and uploaded files.
-#
-# Since Campfire (www.campfirenow.com) doesn't provide an export feature,
-# this script implements one via the Campfire API.
-#
-# See https://github.com/precipice/campfire_export/blob/master/README.md
-# for more information on using this script.
-
 lib = File.expand_path(File.join(File.dirname(__FILE__), '../lib'))
 $LOAD_PATH.unshift(lib) if File.directory?(lib) && !$LOAD_PATH.include?(lib)
 
