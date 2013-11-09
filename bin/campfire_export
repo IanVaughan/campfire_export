@@ -56,6 +56,7 @@ ensure_config_for(config, 'api_token',
 begin
   account = CampfireExport::Account.new(config['subdomain'],
                                         config['api_token'])
+  # move into Account
   account.find_timezone
 
   puts "=> Found rooms : " + account.rooms.map {|r| r.name }.join(", ")
