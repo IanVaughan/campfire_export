@@ -1,7 +1,3 @@
-#!/usr/bin/env ruby
-
-require 'rubygems'
-
 require 'campfire_export/timezone'
 
 require 'cgi'
