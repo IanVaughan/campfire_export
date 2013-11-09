@@ -57,7 +57,29 @@ begin
   account = CampfireExport::Account.new(config['subdomain'],
                                         config['api_token'])
   account.find_timezone
-  account.rooms.each do |room|
+
+  puts "=> Found rooms : " + account.rooms.map {|r| r.name }.join(", ")
+
+  rooms = if config.has_key?('included_rooms')
+    account.rooms.keep_if do |found_room|
+      config['included_rooms'].any? do |included_room|
+        included_room.upcase == found_room.name.upcase
+      end
+    end
+  elsif config.has_key?('excluded_rooms')
+    account.rooms.delete_if do |found_room|
+      config['excluded_rooms'].any? do |included_room|
+        included_room.upcase == found_room.name.upcase
+      end
+    end
+  else
+    account.rooms
+  end
+
+  puts "=> Using rooms : " + rooms.map {|r| r.name }.join(", ")
+
+  rooms.each do |room|
+    puts "=> Reading room : #{room.name}"
     room.export(config_date(config, 'start_date'),
                 config_date(config, 'end_date'))
   end
