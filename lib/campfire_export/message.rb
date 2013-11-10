@@ -23,8 +23,8 @@ module CampfireExport
     end
 
     def username(user_id)
-      @@usernames          ||= {}
-      @@usernames[user_id] ||= begin
+      usernames          ||= {}
+      usernames[user_id] ||= begin
         doc = Nokogiri::XML get("/users/#{user_id}.xml").body
       rescue Exception => e
         "[unknown user]"
