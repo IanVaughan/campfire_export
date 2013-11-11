@@ -1,6 +1,6 @@
 module CampfireExport
   class Transcript
-    include CampfireExport::IO
+    include IO
     attr_accessor :room, :date, :xml, :messages
 
     def initialize(room, date)

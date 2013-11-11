@@ -1,6 +1,6 @@
 module CampfireExport
   class Upload
-    include CampfireExport::IO
+    include IO
     attr_accessor :message, :room, :date, :id, :filename, :content_type, :byte_size, :full_url
 
     def initialize(message)

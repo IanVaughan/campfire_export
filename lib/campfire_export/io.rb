@@ -12,7 +12,7 @@ module CampfireExport
         :basic_auth => {:username => CampfireExport::Account.api_token, :password => 'X'})
 
       if response.code >= 400
-        raise CampfireExport::Exception.new(url, response.message, response.code)
+        raise Exception.new(url, response.message, response.code)
       end
       response
     end

@@ -1,6 +1,6 @@
 module CampfireExport
   class Room
-    include CampfireExport::IO
+    include IO
     attr_accessor :id, :name, :created_at, :last_update
 
     def initialize(room_xml)
