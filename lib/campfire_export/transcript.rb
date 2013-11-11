@@ -12,12 +12,12 @@ module CampfireExport
       "/room/#{room.id}/transcript/#{date.year}/#{date.mon}/#{date.mday}"
     end
 
-    def export
+    def export(dir)
       begin
-        log(:info, "#{export_dir} ... ")
+        log(:info, "#{dir} ... ")
         @xml = Nokogiri::XML get("#{transcript_path}.xml").body
       rescue Exception => e
-        log(:error, "transcript export for #{export_dir} failed", e)
+        log(:error, "transcript export for #{dir} failed", e)
       else
         @messages = xml.xpath('/messages/message').map do |message|
           CampfireExport::Message.new(message, room, date)
@@ -27,14 +27,14 @@ module CampfireExport
         if messages.length > 0
           log(:info, "exporting transcripts\n")
           begin
-            FileUtils.mkdir_p export_dir
+            FileUtils.mkdir_p dir
           rescue Exception => e
-            log(:error, "Unable to create #{export_dir}", e)
+            log(:error, "Unable to create #{dir}", e)
           else
-            export_xml
-            export_plaintext
-            export_html
-            export_uploads
+            export_xml(dir)
+            export_plaintext(dir)
+            export_html(dir)
+            export_uploads(dir)
           end
         else
           log(:info, "no messages\n")
@@ -42,29 +42,29 @@ module CampfireExport
       end
     end
 
-    def export_xml
+    def export_xml(dir)
       begin
-        export_file(xml, 'transcript.xml')
-        verify_export('transcript.xml', xml.to_s.length)
+        export_file(dir, xml, 'transcript.xml')
+        verify_export(dir, 'transcript.xml', xml.to_s.length)
       rescue Exception => e
-        log(:error, "XML transcript export for #{export_dir} failed", e)
+        log(:error, "XML transcript export for #{dir} failed", e)
       end
     end
 
-    def export_plaintext
+    def export_plaintext(dir)
       begin
         date_header = date.strftime('%A, %B %e, %Y').squeeze(" ")
         plaintext = "#{CampfireExport::Account.subdomain.upcase} CAMPFIRE\n"
         plaintext << "#{room.name}: #{date_header}\n\n"
         messages.each {|message| plaintext << message.to_s }
-        export_file(plaintext, 'transcript.txt')
-        verify_export('transcript.txt', plaintext.length)
+        export_file(dir, plaintext, 'transcript.txt')
+        verify_export(dir, 'transcript.txt', plaintext.length)
       rescue Exception => e
-        log(:error, "Plaintext transcript export for #{export_dir} failed", e)
+        log(:error, "Plaintext transcript export for #{dir} failed", e)
       end
     end
 
-    def export_html
+    def export_html(dir)
       begin
         transcript_html = get(transcript_path)
 
@@ -77,20 +77,20 @@ module CampfireExport
         transcript_html.gsub!(%Q{src="/room/#{room.id}/thumb/},
                               %Q{src="thumbs/})
 
-        export_file(transcript_html, 'transcript.html')
-        verify_export('transcript.html', transcript_html.length)
+        export_file(dir, transcript_html, 'transcript.html')
+        verify_export(dir, 'transcript.html', transcript_html.length)
       rescue Exception => e
-        log(:error, "HTML transcript export for #{export_dir} failed", e)
+        log(:error, "HTML transcript export for #{dir} failed", e)
       end
     end
 
-    def export_uploads
+    def export_uploads(dir)
       messages.each do |message|
         if message.is_upload?
           begin
-            message.upload.export
+            message.upload.export(dir)
           rescue Exception => e
-            path = "#{message.upload.export_dir}/#{message.upload.filename}"
+            path = "#{dir}/#{message.upload.filename}"
             log(:error, "Upload export for #{path} failed", e)
           end
         end

@@ -21,34 +21,38 @@ module CampfireExport
       "%02d" % number
     end
 
-    # Requires that room and date be defined in the calling object.
-    def export_dir
-      "campfire/#{Account.subdomain}/#{room.name}/" +
-        "#{date.year}/#{zero_pad(date.mon)}/#{zero_pad(date.day)}"
+    def export_dir(room, date)
+      File.join("campfire",
+        Account.subdomain,
+        room.name,
+        date.year.to_s,
+        zero_pad(date.mon),
+        zero_pad(date.day))
     end
 
     # Requires that room_name and date be defined in the calling object.
-    def export_file(content, filename, mode='w')
+    def export_file(dir, content, filename, mode='w')
       # Check to make sure we're writing into the target directory tree.
-      true_path = File.expand_path(File.join(export_dir, filename))
+      true_path = File.expand_path(File.join(dir, filename))
 
-      unless true_path.start_with?(File.expand_path(export_dir))
-        raise CampfireExport::Exception.new("#{export_dir}/#{filename}",
+      unless true_path.start_with?(File.expand_path(dir))
+        raise Exception.new("#{dir}/#{filename}",
           "can't export file to a directory higher than target directory; " +
-          "expected: #{File.expand_path(export_dir)}, actual: #{true_path}.")
+          "expected: #{File.expand_path(dir)}, actual: #{true_path}.")
       end
 
-      if File.exists?("#{export_dir}/#{filename}")
-        log(:error, "#{export_dir}/#{filename} failed: file already exists")
+      if File.exists?("#{dir}/#{filename}")
+        log(:info, "#{dir}/#{filename} : file already exists - skipping")
       else
-        open("#{export_dir}/#{filename}", mode) do |file|
+        open("#{dir}/#{filename}", mode) do |file|
           file.write content
         end
       end
     end
 
-    def verify_export(filename, expected_size)
-      full_path = "#{export_dir}/#{filename}"
+    def verify_export(dir, filename, expected_size)
+      full_path = "#{dir}/#{filename}"
+
       unless File.exists?(full_path)
         raise CampfireExport::Exception.new(full_path,
           "file should have been exported but did not make it to disk")

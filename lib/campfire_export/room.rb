@@ -19,7 +19,7 @@ module CampfireExport
 
       while date <= end_date
         transcript = Transcript.new(self, date)
-        transcript.export
+        transcript.export(export_dir(self, date))
 
         # Ensure that we stay well below the 37signals API limits.
         sleep(1.0/10.0)
