@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
-lib = File.expand_path(File.join(File.dirname(__FILE__), '../lib'))
-$LOAD_PATH.unshift(lib) if File.directory?(lib) && !$LOAD_PATH.include?(lib)
+require './lib/campfire_export'
 
 config_file = File.join(ENV['HOME'], '.campfire_export.yml')
 config = CampfireExport::Config.new(config_file)
