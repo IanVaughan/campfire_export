@@ -1,7 +1,6 @@
 module CampfireExport
   class Account
-    include CampfireExport::IO
-    include CampfireExport::TimeZone
+    include IO
 
     @subdomain = ""
     @api_token = ""
@@ -16,12 +15,13 @@ module CampfireExport
       Account.subdomain = subdomain
       Account.api_token = api_token
       Account.base_url  = "https://#{subdomain}.campfirenow.com"
+      find_timezone
     end
 
     def find_timezone
       settings = Nokogiri::XML get('/account.xml').body
       selected_zone = settings.xpath('/account/time-zone')
-      Account.timezone = find_tzinfo(selected_zone.text)
+      Account.timezone = TimeZone.find_tzinfo(selected_zone.text)
     end
 
     def rooms
