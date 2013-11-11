@@ -4,8 +4,8 @@ module CampfireExport
     attr_accessor :room, :date, :xml, :messages
 
     def initialize(room, date)
-      @room     = room
-      @date     = date
+      @room = room
+      @date = date
     end
 
     def transcript_path
@@ -13,8 +13,8 @@ module CampfireExport
     end
 
     def export(dir)
+      log(:info, "#{dir} ... ")
       begin
-        log(:info, "#{dir} ... ")
         @xml = Nokogiri::XML get("#{transcript_path}.xml").body
       rescue Exception => e
         log(:error, "transcript export for #{dir} failed", e)
