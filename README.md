@@ -39,10 +39,24 @@ directory using this template:
     # Uncomment to set. Defaults to the date of the last comment in each room.
     #end_date:   2010/12/31
 
+    # OPTIONAL: included rooms - only export transcripts from these rooms
+    # Array of string room name
+    included_rooms:
+    - Test
+
+    # OPTIONAL: excluded rooms - don't export transcripts from these rooms
+    # Array of string room name
+    excluded_rooms:
+    - The place to be
+
 The `start_date` and `end_date` variables are inclusive (that is, if your
 end date is Dec 31, 2010, a transcript for that date will be downloaded), and
 both are optional. If they are omitted, export will run from the date each
 Campfire room was created, until the date of the last message in that room.
+
+The `included_rooms` and `excluded_rooms` are mutually exclusive, that is
+you can't define both. `included_rooms` is checked first, if present,
+`excluded_rooms` will be ignored.
 
 ## Exporting ##
 
