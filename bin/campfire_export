@@ -59,8 +59,7 @@ begin
   # move into Account
   account.find_timezone
 
-  puts "=> Found rooms : " + account.rooms.map {|r| r.name }.join(", ")
-
+  puts "=> Found rooms : '" + account.rooms.map {|r| r.name }.join("', '") + "'"
   rooms = if config.has_key?('included_rooms')
     account.rooms.keep_if do |found_room|
       config['included_rooms'].any? do |included_room|
