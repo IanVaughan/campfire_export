@@ -1,7 +1,6 @@
 module CampfireExport
   class Upload
     include IO
-    attr_accessor :message, :room, :date, :id, :filename, :content_type, :byte_size, :full_url
 
     def initialize(message)
       @message = message
@@ -9,6 +8,9 @@ module CampfireExport
       @date = message.date
       @deleted = false
     end
+
+    private
+    attr_accessor :message, :room, :date, :id, :filename, :content_type, :byte_size, :full_url
 
     def deleted?
       @deleted
@@ -27,34 +29,37 @@ module CampfireExport
       File.join("thumbs", id.to_s)
     end
 
+
+    def upload_path
+      "/room/#{room.id}/messages/#{message.id}/upload"
+    end
+
     def export(dir)
+      log(:info, "    #{message.body} ... ")
       begin
-        log(:info, "    #{message.body} ... ")
-
         # Get the upload object corresponding to this message.
-        upload_path = "/room/#{room.id}/messages/#{message.id}/upload.xml"
-        upload = Nokogiri::XML get(upload_path).body
-
-        # Get the upload itself and export it.
-        @id = upload.xpath('/upload/id').text
-        @byte_size = upload.xpath('/upload/byte-size').text.to_i
-        @content_type = upload.xpath('/upload/content-type').text
-        @filename = upload.xpath('/upload/name').text
-        @full_url = upload.xpath('/upload/full-url').text
-
-        export_content(dir, upload_dir)
-        export_content(dir, thumb_dir, path_component="thumb/#{id}", verify=false) if is_image?
-
-        log(:info, "ok\n")
-      rescue CampfireExport::Exception => e
+        upload = IO.get(upload_path, )
+      rescue Exception => e
         if e.code == 404
           # If the upload 404s, that should mean it was subsequently deleted.
           @deleted = true
-          log(:info, "deleted\n")
+          return log(:info, "deleted\n")
         else
           raise e
         end
       end
+
+      # Get the upload itself and export it.
+      @id = upload.xpath('/upload/id').text
+      @byte_size = upload.xpath('/upload/byte-size').text.to_i
+      @content_type = upload.xpath('/upload/content-type').text
+      @filename = upload.xpath('/upload/name').text
+      @full_url = upload.xpath('/upload/full-url').text
+
+      export_content(dir, upload_dir)
+      export_content(dir, thumb_dir, path_component="thumb/#{id}", verify=false) if is_image?
+
+      log(:info, "ok\n")
     end
 
     def export_content(dir, content_dir, path_component=nil, verify=true)

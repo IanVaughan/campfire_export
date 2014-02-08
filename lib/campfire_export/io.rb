@@ -1,20 +1,22 @@
 module CampfireExport
   module IO
     def api_url(path)
-      "#{CampfireExport::Account.base_url}#{path}"
+      "#{Account.base_url}#{path}"
     end
 
-    def get(path, params = {})
-      url = api_url(path)
+    def get(path, xpath, params = {})
+      url = api_url(path + ".xml")
 
       response = HTTParty.get(url,
         :query => params,
-        :basic_auth => {:username => CampfireExport::Account.api_token, :password => 'X'})
+        :basic_auth => {:username => Account.api_token, :password => 'X'})
 
       if response.code >= 400
         raise Exception.new(url, response.message, response.code)
       end
-      response
+
+      xml_response = Nokogiri::XML response.body
+      xml_response.xpath(xpath)
     end
 
     def zero_pad(number)
@@ -51,16 +53,15 @@ module CampfireExport
     end
 
     def verify_export(dir, filename, expected_size)
-      full_path = "#{dir}/#{filename}"
+      full_path = File.join(dir, filename)
 
-      unless File.exists?(full_path)
-        raise CampfireExport::Exception.new(full_path,
-          "file should have been exported but did not make it to disk")
-      end
-      unless File.size(full_path) == expected_size
-        raise CampfireExport::Exception.new(full_path,
-          "exported file exists but is not the right size " +
-          "(expected: #{expected_size}, actual: #{File.size(full_path)})")
+      msg = "file should have been exported but did not make it to disk"
+      raise Exception.new(full_path, msg) unless File.exists?(full_path)
+
+      if File.size(full_path) != expected_size - 2 || File.size(full_path) != expected_size
+        msg = "exported file exists but is not the right size " +
+          "(expected: #{expected_size}, actual: #{File.size(full_path)})"
+        raise Exception.new(full_path, msg)
       end
     end
 
@@ -69,7 +70,7 @@ module CampfireExport
       when :error
         short_error = ["*** Error: #{message}", exception].compact.join(": ")
         $stderr.puts short_error
-        open("campfire/export_errors.txt", 'a') do |log|
+        open("log/export_errors.log", 'a') do |log|
           log.write short_error
           unless exception.nil?
             log.write %Q{\n\t#{exception.backtrace.join("\n\t")}}

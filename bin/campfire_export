@@ -1,13 +1,13 @@
 #!/usr/bin/env ruby
 
+require 'pry'
 require './lib/campfire_export'
 
 config_file = File.join(ENV['HOME'], '.campfire_export.yml')
 config = CampfireExport::Config.new(config_file)
 
 account = CampfireExport::Account.new(config.subdomain, config.api_token)
-
-puts "=> Found rooms : " + account.rooms.map {|r| "'#{r.name}'" }.join(", ")
+puts "=> Found rooms : " + account.all_room_names
 
 rooms = if config.included_rooms?
   account.rooms.keep_if do |room|
@@ -26,7 +26,6 @@ else
 end
 
 puts "=> Using rooms : " + rooms.map {|r| "'#{r.name}'" }.join(", ")
-
 rooms.each do |room|
   puts "=> Reading room : '#{room.name}'"
   room.export(config.start_date, config.end_date)

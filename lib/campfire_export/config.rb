@@ -2,9 +2,11 @@ require 'yaml'
 
 module CampfireExport
   class Config
-    attr_accessor :subdomain, :api_token, :start_date, :end_date
+    # attr_accessor :subdomain, :api_token, :start_date, :end_date
 
-    def initialize(file)
+    CONFIG_FILE = File.join(ENV['HOME'], 'campfire_export.yml')
+
+    def initialize(file = CONFIG_FILE)
       @config = YAML.load_file(file) if File.exists?(file) && File.readable?(file)
       #@config.symbolize_keys unless @config.nil?
 

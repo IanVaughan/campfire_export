@@ -1,87 +1,80 @@
 module CampfireExport
   class Transcript
     include IO
-    attr_accessor :room, :date, :xml, :messages
 
     def initialize(room, date)
       @room = room
       @date = date
     end
 
-    def transcript_path
-      "/room/#{room.id}/transcript/#{date.year}/#{date.mon}/#{date.mday}"
-    end
-
     def export(dir)
-      log(:info, "#{dir} ... ")
+      log(:info, "#{dir}...")
       begin
-        @xml = Nokogiri::XML get("#{transcript_path}.xml").body
+        @xml = IO.get("#{transcript_path}", '/messages/message')
       rescue Exception => e
-        log(:error, "transcript export for #{dir} failed", e)
-      else
-        @messages = xml.xpath('/messages/message').map do |message|
-          CampfireExport::Message.new(message, room, date)
-        end
-
-        # Only export transcripts that contain at least one message.
-        if messages.length > 0
-          log(:info, "exporting transcripts\n")
-          begin
-            FileUtils.mkdir_p dir
-          rescue Exception => e
-            log(:error, "Unable to create #{dir}", e)
-          else
-            export_xml(dir)
-            export_plaintext(dir)
-            export_html(dir)
-            export_uploads(dir)
-          end
-        else
-          log(:info, "no messages\n")
-        end
+        return log(:error, "transcript export for #{dir} failed", e)
       end
+
+      @messages = xml.map do |message|
+        Message.new(message, room, date)
+      end
+      return log(:info, "no messages\n") if messages.size == 0
+
+      log(:info, "exporting transcripts\n")
+
+      begin
+        FileUtils.mkdir_p dir
+      rescue Exception => e
+        return log(:error, "Unable to create #{dir}", e)
+      end
+
+      export_xml(xml, dir)
+      export_plaintext(dir)
+      export_html(dir)
+      export_uploads(dir)
     end
 
-    def export_xml(dir)
-      begin
-        export_file(dir, xml, 'transcript.xml')
-        verify_export(dir, 'transcript.xml', xml.to_s.length)
-      rescue Exception => e
-        log(:error, "XML transcript export for #{dir} failed", e)
-      end
+    private
+    attr_accessor :room, :date, :messages, :xml
+
+    def export_xml(xml, dir)
+      export_file(dir, xml, 'transcript.xml') # , :verify: true)
+      verify_export(dir, 'transcript.xml', xml.to_s.length)
+    rescue Exception => e
+      log(:error, "XML transcript export for #{dir} failed", e)
+    end
+
+    def date_header
+      date.strftime('%A, %B %e, %Y').squeeze(" ")
     end
 
     def export_plaintext(dir)
-      begin
-        date_header = date.strftime('%A, %B %e, %Y').squeeze(" ")
-        plaintext = "#{CampfireExport::Account.subdomain.upcase} CAMPFIRE\n"
-        plaintext << "#{room.name}: #{date_header}\n\n"
-        messages.each {|message| plaintext << message.to_s }
-        export_file(dir, plaintext, 'transcript.txt')
-        verify_export(dir, 'transcript.txt', plaintext.length)
-      rescue Exception => e
-        log(:error, "Plaintext transcript export for #{dir} failed", e)
-      end
+      plaintext = "#{Account.subdomain.upcase} CAMPFIRE\n"
+      plaintext << "#{room.name}: #{date_header}\n\n"
+      messages.each {|message| plaintext << message.to_s }
+      export_file(dir, plaintext, 'transcript.txt')
+      verify_export(dir, 'transcript.txt', plaintext.length)
+    rescue Exception => e
+      log(:error, "Plaintext transcript export for #{dir} failed", e)
     end
 
     def export_html(dir)
-      begin
-        transcript_html = get(transcript_path)
+      transcript_html = get(transcript_path)
 
-        # Make the upload links in the transcript clickable from the exported
-        # directory layout.
-        transcript_html.gsub!(%Q{href="/room/#{room.id}/uploads/},
-                              %Q{href="uploads/})
-        # Likewise, make the image thumbnails embeddable from the exported
-        # directory layout.
-        transcript_html.gsub!(%Q{src="/room/#{room.id}/thumb/},
-                              %Q{src="thumbs/})
+      # Make the upload links in the transcript clickable from the exported
+      # directory layout.
+      transcript_html.gsub!(%Q{href="/room/#{room.id}/uploads/},
+                            %Q{href="uploads/})
 
-        export_file(dir, transcript_html, 'transcript.html')
-        verify_export(dir, 'transcript.html', transcript_html.length)
-      rescue Exception => e
-        log(:error, "HTML transcript export for #{dir} failed", e)
-      end
+      # Likewise, make the image thumbnails embeddable from the exported
+      # directory layout.
+      transcript_html.gsub!(%Q{src="/room/#{room.id}/thumb/},
+                            %Q{src="thumbs/})
+
+      export_file(dir, transcript_html, 'transcript.html')
+      verify_export(dir, 'transcript.html', transcript_html.length)
+    rescue Exception => e
+      log(:error, "HTML transcript export for #{dir} failed", e)
     end
 
     def export_uploads(dir)
@@ -90,11 +83,15 @@ module CampfireExport
           begin
             message.upload.export(dir)
           rescue Exception => e
-            path = "#{dir}/#{message.upload.filename}"
+            path = File.join(dir, message.upload.filename)
             log(:error, "Upload export for #{path} failed", e)
           end
         end
       end
+    end
+
+    def transcript_path
+      "/room/#{room.id}/transcript/#{date.year}/#{date.mon}/#{date.mday}"
     end
   end
 end

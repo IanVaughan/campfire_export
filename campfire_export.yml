@@ -1,0 +1,11 @@
+subdomain: econsultancy
+api_token: 43761de9d46ae20aefc4f4e0226b9b6b46cac5fc
+
+start_date: 14-11-2012
+end_date: 01-12-2012
+
+# included_rooms:
+# - Test
+
+# excluded_rooms:
+# - The place to be

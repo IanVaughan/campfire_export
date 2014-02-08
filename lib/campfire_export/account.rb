@@ -1,32 +1,28 @@
 module CampfireExport
   class Account
-    include IO
-
-    @subdomain = ""
-    @api_token = ""
-    @base_url  = ""
-    @timezone  = nil
-
-    class << self
-      attr_accessor :subdomain, :api_token, :base_url, :timezone
-    end
+    # attr_accessor :subdomain, :api_token, :base_url, :timezone
 
     def initialize(subdomain, api_token)
-      Account.subdomain = subdomain
-      Account.api_token = api_token
-      Account.base_url  = "https://#{subdomain}.campfirenow.com"
+      @subdomain = subdomain
+      @api_token = api_token
+      @base_url  = "https://#{@subdomain}.campfirenow.com"
+      @timezone  = nil
+
       find_timezone
     end
 
     def find_timezone
-      settings = Nokogiri::XML get('/account.xml').body
-      selected_zone = settings.xpath('/account/time-zone')
-      Account.timezone = TimeZone.find_tzinfo(selected_zone.text)
+      selected_zone = IO.get('/account', '/account/time-zone')
+      @timezone = TimeZone.find_tzinfo(selected_zone.text)
     end
 
     def rooms
-      doc = Nokogiri::XML get('/rooms.xml').body
-      doc.xpath('/rooms/room').map {|room_xml| Room.new(room_xml) }
+      IO.get('/rooms', '/rooms/room').map {|room_xml| Room.new(room_xml) }
+      # @rooms ||= x
+    end
+
+    def all_room_names
+      rooms.map { |r| "'#{r.name}'" }.join(", ")
     end
   end
 end

@@ -1,7 +1,6 @@
 module CampfireExport
   class Room
     include IO
-    attr_accessor :id, :name, :created_at, :last_update
 
     def initialize(room_xml)
       @id         = room_xml.xpath('id').text
@@ -22,21 +21,21 @@ module CampfireExport
         transcript.export(export_dir(self, date))
 
         # Ensure that we stay well below the 37signals API limits.
-        sleep(1.0/10.0)
+        sleep(0.1)
         date = date.next
       end
     end
 
     private
+      attr_accessor :id, :name, :created_at, :last_update
+
       def find_last_update
         begin
-          last_message = Nokogiri::XML get("/room/#{id}/recent.xml?limit=1").body
-          update_utc   = DateTime.parse(last_message.xpath('/messages/message[1]/created-at').text)
+          last_message = IO.get("/room/#{id}/recent.xml?limit=1", '/messages/message[1]/created-at').text
+          update_utc = DateTime.parse(last_message)
           @last_update = Account.timezone.utc_to_local(update_utc)
         rescue Exception => e
-          log(:error,
-              "couldn't get last update in #{room} (defaulting to today)",
-              e)
+          log(:error, "couldn't get last update in #{room} (defaulting to today)", e)
           @last_update = Time.now
         end
       end

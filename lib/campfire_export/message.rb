@@ -1,6 +1,5 @@
 module CampfireExport
   class Message
-    include CampfireExport::IO
     attr_accessor :id, :room, :body, :type, :user, :date, :timestamp, :upload
 
     def initialize(message, room, date)
@@ -11,7 +10,7 @@ module CampfireExport
       @type = message.xpath('type').text
 
       time = Time.parse message.xpath('created-at').text
-      localtime = CampfireExport::Account.timezone.utc_to_local(time)
+      localtime = Account.timezone.utc_to_local(time)
       @timestamp = localtime.strftime '%I:%M %p'
 
       no_user = ['TimestampMessage', 'SystemMessage', 'AdvertisementMessage']
@@ -19,24 +18,34 @@ module CampfireExport
         @user = username(message.xpath('user-id').text)
       end
 
-      @upload = CampfireExport::Upload.new(self) if is_upload?
+      @upload = Upload.new(self) if is_upload?
+      @usernames = {}
     end
 
+    private
+
     def username(user_id)
-      usernames          ||= {}
-      usernames[user_id] ||= begin
-        doc = Nokogiri::XML get("/users/#{user_id}.xml").body
+      @usernames[user_id] ||= get_user(user_id)
+    end
+
+    def get_user(user_id)
+      begin
+        doc = IO.get("/users/#{user_id}", '/user/name').body
       rescue Exception => e
-        "[unknown user]"
+        return "[unknown user]"
+      end
+
+      get_first_name_with_last_initial(doc.text)
+    end
+
+    def get_first_name_with_last_initial(doc_text)
+      # Take the first name and last initial, if there is more than one name.
+      name_parts = doc_text.split
+      if name_parts.length > 1
+        name_parts[-1] = "#{name_parts.last[0,1]}."
+        name_parts.join(" ")
       else
-        # Take the first name and last initial, if there is more than one name.
-        name_parts = doc.xpath('/user/name').text.split
-        if name_parts.length > 1
-          name_parts[-1] = "#{name_parts.last[0,1]}."
-          name_parts.join(" ")
-        else
-          name_parts[0]
-        end
+        name_parts[0]
       end
     end
 
