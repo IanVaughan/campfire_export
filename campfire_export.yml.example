@@ -4,8 +4,8 @@ api_token: 1234abc
 start_date: 14-11-2012
 end_date: 01-12-2012
 
-# included_rooms:
-# - Test
+included_rooms:
+- Test
 
-# excluded_rooms:
-# - The place to be
+excluded_rooms:
+- The place to be
