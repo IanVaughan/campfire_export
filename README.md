@@ -2,23 +2,8 @@
 
 ## Quick Start ##
 
-    $ sudo gem install campfire_export
+    $ gem install campfire_export
     $ campfire_export
-
-## Intro ##
-
-I had an old, defunct [Campfire](http://campfirenow.com/) account with five
-years' worth of transcripts in it, some of them hilarious, others just 
-memorable. Unfortunately, Campfire doesn't currently have an export function;
-instead it provides pages of individual transcripts. I wanted a script to
-export everything from all five years, using the Campfire API.
-
-I found a [Gist](https://gist.github.com) that looked pretty good:
-
-* [https://gist.github.com/821553](https://gist.github.com/821553)
-
-but it wasn't quite right. So this is my modification, converted to a GitHub
-repo and a [Ruby gem](http://docs.rubygems.org/read/chapter/1).
 
 ## Features ##
 
@@ -33,14 +18,9 @@ repo and a [Ruby gem](http://docs.rubygems.org/read/chapter/1).
 [RubyGems](https://rubygems.org/pages/download) is also required -- I'd
 recommend having the latest version of RubyGems installed before starting.
 
-Once you are set up, to install, run the following:
-
-    $ sudo gem install campfire_export
-
 ## Configuring ##
 
-There are a number of configuration variables required to run the export. The
-export script will prompt you for these; just run it and away you go. If you
+The export script will prompt you for config; just run it and away you go. If you
 want to run the script repeatedly or want to control the start and end date of
 the export, you can create a `.campfire_export.yml` file in your home
 directory using this template:
@@ -49,7 +29,7 @@ directory using this template:
     subdomain:  myco
 
     # Your Campfire API token (see "My Info" on your Campfire site).
-    api_token:  abababababababababababababababababababab
+    api_token:  token
 
     # OPTIONAL: Export start date - the first transcript you want exported.
     # Uncomment to set. Defaults to the date each room was created.
